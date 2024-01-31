@@ -39,6 +39,43 @@ final class MediaViewController: UIViewController {
             self.tableView.reloadData()
         }
     }
+    
+    private func goToDetailVC(with id: Int) {
+        let dispatchGroup = DispatchGroup()
+        
+        var detail: DetailModel?
+        var recommendedTVSeriesList: [RecommendedTVSeries]?
+        var castMoel: AggregateCreditsModel?
+        
+        dispatchGroup.enter()
+        DetailManager.shared.fetchTVSeriesDetails(id: id) { detailModel in
+            detail = detailModel
+            dispatchGroup.leave()
+        }
+        
+        dispatchGroup.enter()
+        RecommendationsManager.shared.fetchRecommendedTVSeries(id: id) {
+            tvSeriesList in
+            recommendedTVSeriesList = tvSeriesList
+            dispatchGroup.leave()
+        }
+        
+        dispatchGroup.enter()
+        AggregateCreditsManager.shared.fetchTVSeriesCastings(id: id) { castingMoel in
+            castMoel = castingMoel
+            dispatchGroup.leave()
+        }
+        
+        dispatchGroup.notify(queue: .main) {
+            print("끝남")
+            let detailVC = DetailViewController()
+            detailVC.tvSeriesDetails = detail
+            detailVC.recommendedTVSeriesList = recommendedTVSeriesList ?? []
+            detailVC.castModel = castMoel
+            
+            self.navigationController?.pushViewController(detailVC, animated: true)
+        }
+    }
 }
 
 extension MediaViewController: UIViewControllerConfigurationProtocol {
@@ -94,7 +131,21 @@ extension MediaViewController: UITableViewDataSource {
 }
 
 extension MediaViewController: UICollectionViewDelegate {
-    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        var id: Int = 0
+        if collectionView.tag == 0 {
+            let tvSeries = trendingTVSeriesList[indexPath.item]
+            id = tvSeries.id
+        } else if collectionView.tag == 1 {
+            let tvSeries = topRatedTVSeriesList[indexPath.item]
+            id = tvSeries.id
+        } else if collectionView.tag == 2 {
+            let tvSeries = popularTVSeriesList[indexPath.item]
+            id = tvSeries.id
+        }
+        
+        goToDetailVC(with: id)
+    }
 }
 
 extension MediaViewController: UICollectionViewDataSource {
