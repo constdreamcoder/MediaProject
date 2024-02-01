@@ -12,22 +12,22 @@ final class DetailManager {
     
     private init() {}
     
-    func fetchTVSeriesDetails(id: Int, completionHandler: @escaping (DetailModel) -> Void) {
-        let urlString = "https://api.themoviedb.org/3/tv/\(id)?language=ko-KR"
+    func fetchTVSeriesDetails(api: TMDBAPIBase, completionHandler: @escaping (DetailModel) -> Void) {
         
-        let headers: HTTPHeaders = [
-            "Authorization" : APIKeys.tmdb
-        ]
-        
-        AF.request(urlString, headers: headers)
-            .responseDecodable(of: DetailModel.self) { response in
-                switch response.result {
-                case .success(let success):
-//                    print("success: \(success)")
-                    completionHandler(success)
-                case .failure(let failure):
-                    print("failure: \(failure)")
-                }
+        AF.request(
+            api.endpoint,
+            method: api.method,
+            parameters: api.parameters,
+            encoding: URLEncoding(destination: .queryString),
+            headers: api.headers)
+        .responseDecodable(of: DetailModel.self) { response in
+            switch response.result {
+            case .success(let success):
+                //print("success: \(success)")
+                completionHandler(success)
+            case .failure(let failure):
+                print("failure: \(failure)")
             }
+        }
     }
 }

@@ -12,22 +12,22 @@ final class PopularManager {
     
     private init() {}
     
-    func fetchPopularTVSeries(completionHandler: @escaping ([PopularTVSeries]) -> Void) {
-        let urlString = "https://api.themoviedb.org/3/tv/popular?language=ko-KR&page=1"
+    func fetchPopularTVSeries(api: TMDBAPIBase, completionHandler: @escaping ([PopularTVSeries]) -> Void) {
         
-        let headers: HTTPHeaders = [
-            "Authorization" : APIKeys.tmdb
-        ]
-        
-        AF.request(urlString, headers: headers)
-            .responseDecodable(of: PopularModel.self) { response in
-                switch response.result {
-                case .success(let success):
-//                    print("success: \(success)")
-                    completionHandler(success.results)
-                case .failure(let failure):
-                    print("failure: \(failure)")
-                }
+        AF.request(
+            api.endpoint,
+            method: api.method,
+            parameters: api.parameters,
+            encoding: URLEncoding(destination: .queryString),
+            headers: api.headers)
+        .responseDecodable(of: PopularModel.self) { response in
+            switch response.result {
+            case .success(let success):
+                //print("success: \(success)")
+                completionHandler(success.results)
+            case .failure(let failure):
+                print("failure: \(failure)")
             }
+        }
     }
 }

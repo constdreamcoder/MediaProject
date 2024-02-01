@@ -12,22 +12,22 @@ final class TrendingManager {
     
     private init() {}
     
-    func fetchTrendingTVSeries(completionHandler: @escaping ([TrendingTVSeries]) -> Void) {
-        let urlString = "https://api.themoviedb.org/3/trending/tv/day?language=ko-KR"
+    func fetchTrendingTVSeries(api: TMDBAPIBase, completionHandler: @escaping ([TrendingTVSeries]) -> Void) {
         
-        let headers: HTTPHeaders = [
-            "Authorization" : APIKeys.tmdb
-        ]
-        
-        AF.request(urlString, headers: headers)
-            .responseDecodable(of: TrendingModel.self) { response in
-                switch response.result {
-                case .success(let success):
-//                    print("success: \(success)")
-                    completionHandler(success.results)
-                case .failure(let failure):
-                    print("failure: \(failure)")
-                }
+        AF.request(
+            api.endpoint,
+            method: api.method,
+            parameters: api.parameters,
+            encoding: URLEncoding(destination: .queryString),
+            headers: api.headers)
+        .responseDecodable(of: TrendingModel.self) { response in
+            switch response.result {
+            case .success(let success):
+                //print("success: \(success)")
+                completionHandler(success.results)
+            case .failure(let failure):
+                print("failure: \(failure)")
             }
+        }
     }
 }

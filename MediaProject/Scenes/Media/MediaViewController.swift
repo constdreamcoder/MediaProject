@@ -23,19 +23,31 @@ final class MediaViewController: UIViewController {
         
         configureConstraints()
         configureTableView()
+        getData()
+    }
+    
+    private func getData() {
+        let dispathGroup = DispatchGroup()
         
-        TrendingManager.shared.fetchTrendingTVSeries { trendingTVSeriesList in
+        dispathGroup.enter()
+        TrendingManager.shared.fetchTrendingTVSeries(api: .trending) { trendingTVSeriesList in
             self.trendingTVSeriesList = trendingTVSeriesList
-            self.tableView.reloadData()
+            dispathGroup.leave()
         }
         
-        TopRatedManager.shared.fetchTopRatedTVSeries { topRatedTVSeriesList in
+        dispathGroup.enter()
+        TopRatedManager.shared.fetchTopRatedTVSeries(api: .topRated) { topRatedTVSeriesList in
             self.topRatedTVSeriesList = topRatedTVSeriesList
-            self.tableView.reloadData()
+            dispathGroup.leave()
         }
         
-        PopularManager.shared.fetchPopularTVSeries { popularTVSeriesList in
+        dispathGroup.enter()
+        PopularManager.shared.fetchPopularTVSeries(api: .popular) { popularTVSeriesList in
             self.popularTVSeriesList = popularTVSeriesList
+            dispathGroup.leave()
+        }
+        
+        dispathGroup.notify(queue: .main) {
             self.tableView.reloadData()
         }
     }
@@ -48,26 +60,25 @@ final class MediaViewController: UIViewController {
         var castMoel: AggregateCreditsModel?
         
         dispatchGroup.enter()
-        DetailManager.shared.fetchTVSeriesDetails(id: id) { detailModel in
+        DetailManager.shared.fetchTVSeriesDetails(api: .detail(id: id)) { detailModel in
             detail = detailModel
             dispatchGroup.leave()
         }
         
         dispatchGroup.enter()
-        RecommendationsManager.shared.fetchRecommendedTVSeries(id: id) {
+        RecommendationsManager.shared.fetchRecommendedTVSeries(api: .recommendations(id: id)) {
             tvSeriesList in
             recommendedTVSeriesList = tvSeriesList
             dispatchGroup.leave()
         }
         
         dispatchGroup.enter()
-        AggregateCreditsManager.shared.fetchTVSeriesCastings(id: id) { castingMoel in
+        AggregateCreditsManager.shared.fetchTVSeriesCastings(api: .aggregateCredits(id: id)) { castingMoel in
             castMoel = castingMoel
             dispatchGroup.leave()
         }
         
         dispatchGroup.notify(queue: .main) {
-            print("끝남")
             let detailVC = DetailViewController()
             detailVC.tvSeriesDetails = detail
             detailVC.recommendedTVSeriesList = recommendedTVSeriesList ?? []
@@ -103,7 +114,6 @@ extension MediaViewController: UITableViewConfigurationProtocol {
         
         tableView.register(MediaTableViewCell.self, forCellReuseIdentifier: MediaTableViewCell.identifier)
     }
-    
 }
 
 extension MediaViewController: UITableViewDelegate {

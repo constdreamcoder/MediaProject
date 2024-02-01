@@ -12,22 +12,22 @@ final class AggregateCreditsManager {
     
     private init() {}
     
-    func fetchTVSeriesCastings(id: Int, completionHandler: @escaping (AggregateCreditsModel) -> Void) {
-        let urlString = "https://api.themoviedb.org/3/tv/\(id)/aggregate_credits?language=ko-KR"
+    func fetchTVSeriesCastings(api: TMDBAPIBase, completionHandler: @escaping (AggregateCreditsModel) -> Void) {
         
-        let headers: HTTPHeaders = [
-            "Authorization" : APIKeys.tmdb
-        ]
-        
-        AF.request(urlString, headers: headers)
-            .responseDecodable(of: AggregateCreditsModel.self) { response in
-                switch response.result {
-                case .success(let success):
-//                    print("success: \(success)")
-                    completionHandler(success)
-                case .failure(let failure):
-                    print("failure: \(failure)")
-                }
+        AF.request(
+            api.endpoint,
+            method: api.method,
+            parameters: api.parameters,
+            encoding: URLEncoding(destination: .queryString),
+            headers: api.headers)
+        .responseDecodable(of: AggregateCreditsModel.self) { response in
+            switch response.result {
+            case .success(let success):
+                //print("success: \(success)")
+                completionHandler(success)
+            case .failure(let failure):
+                print("failure: \(failure)")
             }
+        }
     }
 }
