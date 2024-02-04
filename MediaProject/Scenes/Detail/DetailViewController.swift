@@ -31,7 +31,7 @@ class DetailViewController: UIViewController {
     }()
     
     var tvSeriesDetails: DetailModel?
-    var recommendedTVSeriesList: [RecommendedTVSeries] = []
+    var recommendedTVSeriesList: [TVSeriesModelProtocol] = []
     var castModel: AggregateCreditsModel?
     
     override func viewDidLoad() {
@@ -93,9 +93,8 @@ extension DetailViewController: UICollectionViewDataSource {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RecommendedTVSeriesCollectionViewCell.identifier, for: indexPath) as! RecommendedTVSeriesCollectionViewCell
         
         let tvSeries = recommendedTVSeriesList[indexPath.item]
+        cell.getImage(cell, tvSeries: tvSeries)
         
-        let url = URL(string: "https://image.tmdb.org/t/p/w500/\(tvSeries.backdropPath)")
-        cell.backdropImageView.kf.setImage(with: url, placeholder: UIImage(systemName: "photo"))
         cell.originalNameLabel.text = tvSeries.originalName
         
         return cell

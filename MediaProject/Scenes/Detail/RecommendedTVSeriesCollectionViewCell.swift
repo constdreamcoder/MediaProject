@@ -8,7 +8,8 @@
 import UIKit
 import SnapKit
 
-class RecommendedTVSeriesCollectionViewCell: UICollectionViewCell {
+final class RecommendedTVSeriesCollectionViewCell: UICollectionViewCell, UICollectionViewCellBackdropImageViewConfigurationProtocol {
+    
     let backdropImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.image = UIImage(systemName: "photo")

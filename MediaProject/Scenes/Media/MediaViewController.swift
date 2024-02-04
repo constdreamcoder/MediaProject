@@ -13,9 +13,9 @@ final class MediaViewController: UIViewController {
     
     private let tableView = UITableView()
     
-    private var trendingTVSeriesList: [TrendingTVSeries] = []
-    private var topRatedTVSeriesList: [TopRatedTVSeries] = []
-    private var popularTVSeriesList: [PopularTVSeries] = []
+    private var trendingTVSeriesList: [TVSeriesModelProtocol] = []
+    private var topRatedTVSeriesList: [TVSeriesModelProtocol] = []
+    private var popularTVSeriesList: [TVSeriesModelProtocol] = []
 
     private let tableViewTitleList = ["Trending", "Top Rated", "Popular"]
     override func viewDidLoad() {
@@ -30,19 +30,19 @@ final class MediaViewController: UIViewController {
         let dispathGroup = DispatchGroup()
         
         dispathGroup.enter()
-        TrendingManager.shared.fetchTrendingTVSeries(api: .trending) { trendingTVSeriesList in
+        TMDBAPIManager.shared.fetchDataList(decodingType: TrendingModel.self, api: .trending) { trendingTVSeriesList in
             self.trendingTVSeriesList = trendingTVSeriesList
             dispathGroup.leave()
         }
         
         dispathGroup.enter()
-        TopRatedManager.shared.fetchTopRatedTVSeries(api: .topRated) { topRatedTVSeriesList in
+        TMDBAPIManager.shared.fetchDataList(decodingType: TopRatedModel.self, api: .topRated) { topRatedTVSeriesList in
             self.topRatedTVSeriesList = topRatedTVSeriesList
             dispathGroup.leave()
         }
         
         dispathGroup.enter()
-        PopularManager.shared.fetchPopularTVSeries(api: .popular) { popularTVSeriesList in
+        TMDBAPIManager.shared.fetchDataList(decodingType: PopularModel.self, api: .popular) { popularTVSeriesList in
             self.popularTVSeriesList = popularTVSeriesList
             dispathGroup.leave()
         }
@@ -56,24 +56,24 @@ final class MediaViewController: UIViewController {
         let dispatchGroup = DispatchGroup()
         
         var detail: DetailModel?
-        var recommendedTVSeriesList: [RecommendedTVSeries]?
+        var recommendedTVSeriesList: [TVSeriesModelProtocol]?
         var castMoel: AggregateCreditsModel?
         
         dispatchGroup.enter()
-        DetailManager.shared.fetchTVSeriesDetails(api: .detail(id: id)) { detailModel in
+        TMDBAPIManager.shared.fetchData(decodingType: DetailModel.self, api: .detail(id: id)) { detailModel in
             detail = detailModel
             dispatchGroup.leave()
         }
         
         dispatchGroup.enter()
-        RecommendationsManager.shared.fetchRecommendedTVSeries(api: .recommendations(id: id)) {
+        TMDBAPIManager.shared.fetchDataList(decodingType: RecommendationsModel.self, api: .recommendations(id: id)) {
             tvSeriesList in
             recommendedTVSeriesList = tvSeriesList
             dispatchGroup.leave()
         }
         
         dispatchGroup.enter()
-        AggregateCreditsManager.shared.fetchTVSeriesCastings(api: .aggregateCredits(id: id)) { castingMoel in
+        TMDBAPIManager.shared.fetchData(decodingType: AggregateCreditsModel.self, api: .aggregateCredits(id: id)) { castingMoel in
             castMoel = castingMoel
             dispatchGroup.leave()
         }
@@ -166,27 +166,18 @@ extension MediaViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MediaCollectionViewCell.identifier, for: indexPath) as! MediaCollectionViewCell
         
+        var tvSeries: TVSeriesModelProtocol?
         if collectionView.tag == 0 {
-            let tvSeries = trendingTVSeriesList[indexPath.item]
-            let url = URL(string: "https://image.tmdb.org/t/p/w500/\(tvSeries.backdropPath)")
-            cell.backdropImageView.kf.setImage(with: url, placeholder: UIImage(systemName: "photo"))
+            tvSeries = trendingTVSeriesList[indexPath.item]
         } else if collectionView.tag == 1 {
-            let tvSeries = topRatedTVSeriesList[indexPath.item]
-            let url = URL(string: "https://image.tmdb.org/t/p/w500/\(tvSeries.backdropPath)")
-            cell.backdropImageView.kf.setImage(with: url, placeholder: UIImage(systemName: "photo"))
+            tvSeries = topRatedTVSeriesList[indexPath.item]
         } else if collectionView.tag == 2 {
-            let tvSeries = popularTVSeriesList[indexPath.item]
-            if let backdropPath = tvSeries.backdropPath {
-                let url = URL(string: "https://image.tmdb.org/t/p/w500/\(backdropPath)")
-                cell.backdropImageView.kf.setImage(with: url, placeholder: UIImage(systemName: "photo"))
-            } else if let posterPath = tvSeries.posterPath {
-                let url = URL(string: "https://image.tmdb.org/t/p/w500/\(posterPath)")
-                cell.backdropImageView.kf.setImage(with: url, placeholder: UIImage(systemName: "photo"))
-            } else {
-                cell.backdropImageView.image = UIImage(systemName: "photo")
-            }
+            tvSeries = popularTVSeriesList[indexPath.item]
         }
-        
+        if let tvSeries = tvSeries {
+            cell.getImage(cell, tvSeries: tvSeries)
+        }
+
         return cell
     }
 }

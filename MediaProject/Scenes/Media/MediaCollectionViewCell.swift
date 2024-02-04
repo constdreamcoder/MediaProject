@@ -8,7 +8,7 @@
 import UIKit
 import SnapKit
 
-final class MediaCollectionViewCell: UICollectionViewCell {
+final class MediaCollectionViewCell: UICollectionViewCell, UICollectionViewCellBackdropImageViewConfigurationProtocol {
     
     let backdropImageView = UIImageView()
     

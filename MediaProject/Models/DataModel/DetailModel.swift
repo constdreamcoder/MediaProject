@@ -12,7 +12,6 @@ struct DetailModel: Decodable {
     let name: String
     let originalName: String
     let overview: String
-    let tagline: String
     let backdropPath: String
     
     enum CodingKeys: String, CodingKey {
@@ -20,7 +19,6 @@ struct DetailModel: Decodable {
         case name
         case originalName = "original_name"
         case overview
-        case tagline
         case backdropPath = "backdrop_path"
     }
 }
