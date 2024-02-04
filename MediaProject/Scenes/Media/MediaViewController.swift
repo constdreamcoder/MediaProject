@@ -13,9 +13,7 @@ final class MediaViewController: UIViewController {
     
     private let tableView = UITableView()
     
-    private var trendingTVSeriesList: [TVSeriesModelProtocol] = []
-    private var topRatedTVSeriesList: [TVSeriesModelProtocol] = []
-    private var popularTVSeriesList: [TVSeriesModelProtocol] = []
+    private var tvSeriesList: [[TVSeriesModelProtocol]] = Array<[TVSeriesModelProtocol]>(repeating: [], count: 3)
 
     private let tableViewTitleList = ["Trending", "Top Rated", "Popular"]
     override func viewDidLoad() {
@@ -31,19 +29,19 @@ final class MediaViewController: UIViewController {
         
         dispathGroup.enter()
         TMDBAPIManager.shared.fetchDataList(decodingType: TrendingModel.self, api: .trending) { trendingTVSeriesList in
-            self.trendingTVSeriesList = trendingTVSeriesList
+            self.tvSeriesList[0] = trendingTVSeriesList
             dispathGroup.leave()
         }
         
         dispathGroup.enter()
         TMDBAPIManager.shared.fetchDataList(decodingType: TopRatedModel.self, api: .topRated) { topRatedTVSeriesList in
-            self.topRatedTVSeriesList = topRatedTVSeriesList
+            self.tvSeriesList[1] = topRatedTVSeriesList
             dispathGroup.leave()
         }
         
         dispathGroup.enter()
         TMDBAPIManager.shared.fetchDataList(decodingType: PopularModel.self, api: .popular) { popularTVSeriesList in
-            self.popularTVSeriesList = popularTVSeriesList
+            self.tvSeriesList[2] = popularTVSeriesList
             dispathGroup.leave()
         }
         
@@ -143,16 +141,9 @@ extension MediaViewController: UITableViewDataSource {
 extension MediaViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         var id: Int = 0
-        if collectionView.tag == 0 {
-            let tvSeries = trendingTVSeriesList[indexPath.item]
-            id = tvSeries.id
-        } else if collectionView.tag == 1 {
-            let tvSeries = topRatedTVSeriesList[indexPath.item]
-            id = tvSeries.id
-        } else if collectionView.tag == 2 {
-            let tvSeries = popularTVSeriesList[indexPath.item]
-            id = tvSeries.id
-        }
+        
+        let tvSeries = tvSeriesList[collectionView.tag][indexPath.item]
+        id = tvSeries.id
         
         goToDetailVC(with: id)
     }
@@ -160,23 +151,14 @@ extension MediaViewController: UICollectionViewDelegate {
 
 extension MediaViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return trendingTVSeriesList.count
+        return tvSeriesList[collectionView.tag].count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MediaCollectionViewCell.identifier, for: indexPath) as! MediaCollectionViewCell
         
-        var tvSeries: TVSeriesModelProtocol?
-        if collectionView.tag == 0 {
-            tvSeries = trendingTVSeriesList[indexPath.item]
-        } else if collectionView.tag == 1 {
-            tvSeries = topRatedTVSeriesList[indexPath.item]
-        } else if collectionView.tag == 2 {
-            tvSeries = popularTVSeriesList[indexPath.item]
-        }
-        if let tvSeries = tvSeries {
-            cell.getImage(cell, tvSeries: tvSeries)
-        }
+        let tvSeries = tvSeriesList[collectionView.tag][indexPath.item]
+        cell.getImage(cell, tvSeries: tvSeries)
 
         return cell
     }
