@@ -58,21 +58,39 @@ final class MediaViewController: UIViewController {
         var castMoel: AggregateCreditsModel?
         
         dispatchGroup.enter()
-        TMDBAPIManager.shared.fetchData(decodingType: DetailModel.self, api: .detail(id: id)) { detailModel in
-            detail = detailModel
+        TMDBAPIURLSession.shared.fetchData(decodingType: DetailModel.self, api: .detail(id: id)) { detailModel, error in
+            
+            if error == nil {
+                guard let detailModel = detailModel else { return }
+                detail = detailModel
+            } else {
+                print(error!)
+            }
             dispatchGroup.leave()
         }
         
         dispatchGroup.enter()
-        TMDBAPIManager.shared.fetchDataList(decodingType: RecommendationsModel.self, api: .recommendations(id: id)) {
-            tvSeriesList in
-            recommendedTVSeriesList = tvSeriesList
+        TMDBAPIURLSession.shared.fetchDataList(decodingType: RecommendationsModel.self, api: .recommendations(id: id)) {
+            tvSeriesList, error  in
+            
+            if error == nil {
+                guard let tvSeriesList = tvSeriesList else { return }
+                recommendedTVSeriesList = tvSeriesList
+            } else {
+                print(error!)
+            }
             dispatchGroup.leave()
         }
         
         dispatchGroup.enter()
-        TMDBAPIManager.shared.fetchData(decodingType: AggregateCreditsModel.self, api: .aggregateCredits(id: id)) { castingMoel in
-            castMoel = castingMoel
+        TMDBAPIURLSession.shared.fetchData(decodingType: AggregateCreditsModel.self, api: .aggregateCredits(id: id)) { castingMoel, error in
+           
+            if error == nil {
+                guard let castingMoel = castingMoel else { return }
+                castMoel = castingMoel
+            } else {
+                print(error!)
+            }
             dispatchGroup.leave()
         }
         

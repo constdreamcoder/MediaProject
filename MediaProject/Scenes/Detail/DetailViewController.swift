@@ -124,8 +124,12 @@ extension DetailViewController: UITableViewDataSource {
         cell.overviewLabel.text = detail.overview
         
         guard let castModel = castModel else { return UITableViewCell() }
-        let director = castModel.crew.map { $0.originalName }[0]
-        cell.directorLabel.text = director
+        let directorNameList = castModel.crew.map { $0.originalName }
+        if directorNameList.count > 0 {
+            cell.directorLabel.text = directorNameList[0]
+        } else {
+            cell.directorLabel.text = "미등록됨"
+        }
         
         let castOriginalNameList = Array(castModel.cast.map { $0.originalName }[0..<4])
         cell.castLabel.text = castOriginalNameList.joined(separator: ", ")
